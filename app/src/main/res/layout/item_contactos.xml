@@ -14,8 +14,7 @@
         android:layout_height="45dp"
         android:layout_weight="0.2"
         android:gravity="center"
-        android:src="@android:drawable/presence_audio_busy"
-        app:srcCompat="@drawable/user" />
+        android:src="@drawable/user" />
 
     <TextView
         android:id="@+id/idContacto"
@@ -28,6 +27,7 @@
     <TextView
         android:id="@+id/nombre"
         android:layout_height="45dp"
+        android:layout_width="0dp"
         android:layout_weight="0.7"
         android:gravity="center|left"
         android:text="3124550000" />
