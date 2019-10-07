@@ -25,6 +25,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 askPermissionMap();
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                    Intent intent = new Intent(getApplicationContext(), LocationActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
                     startActivity(intent);
                 }
             }
