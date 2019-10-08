@@ -2,6 +2,7 @@ package com.example.taller2;
 
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.DownloadManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -12,6 +13,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -19,11 +26,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -86,6 +96,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //int minutos = calendario.get(Calendar.MINUTE);
                 //int segundos = calendario.get(Calendar.SECOND);
 
+                final double latitudeSource = location.getLatitude();
+                final double longitudeSource = location.getLongitude();
+
                 if (location != null) {
                     LatLng bogota = new LatLng( location.getLatitude(), location.getLongitude() );
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(bogota));
@@ -96,6 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .icon(BitmapDescriptorFactory.fromResource(R.drawable.location))
                     );
 
+
                     if (hora >= 6 && hora <18){
                         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getApplicationContext(), R.raw.map_style_day));
                     }
@@ -103,24 +117,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getApplicationContext(), R.raw.map_style_night));
                     }
 
-                    //      Use Geocoder        //
-                    /*
-                    List<Address> addresses = mGeocoder.getFromLocationName( "cl", 2,
-                            lowerLeftLatitude,
-                            lowerLeftLongitude,
-                            upperRightLatitude,
-                            upperRigthLongitude);
-                    */
-
                     editTextAddress = (EditText) findViewById(R.id.editTextAddress);
-
                     editTextAddress.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                         @Override
                         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                         if (actionId == EditorInfo.IME_ACTION_DONE){
                             String addressString = editTextAddress.getText().toString();
-                            //Toast.makeText(getApplicationContext(), "Entre", Toast.LENGTH_LONG).show();
-                            findAddress(addressString, mGeocoder);
+                            findAddress(addressString, mGeocoder, latitudeSource, longitudeSource);
                         }
                         return false;
                         }
@@ -133,21 +136,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    public void findAddress (String addressString, Geocoder mGeocoder){
+    public void findAddress (String addressString, Geocoder mGeocoder, double latitudeSource, double longitudeSource ){
 
         if (!addressString.isEmpty()) {
             try {
                 List<Address> addresses = mGeocoder.getFromLocationName(addressString, 2);
                 if (addresses != null && !addresses.isEmpty()) {
                     Address addressResult = addresses.get(0);
-                    LatLng position = new LatLng(addressResult.getLatitude(), addressResult.getLongitude());
+                    double latitudeDes = addressResult.getLatitude();
+                    double longitudeDes = addressResult.getLongitude();
+                    LatLng position = new LatLng(latitudeDes, longitudeDes);
+
                     if (mMap != null) {
                         MarkerOptions myMarkerOptions = new MarkerOptions();
                         myMarkerOptions.position(position);
                         myMarkerOptions.title("Dirección Encontrada");
                         myMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
                         mMap.addMarker(myMarkerOptions);
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(new LatLng(latitudeDes, longitudeDes ))
+                            .zoom(15)
+                            .build();
+                        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                        //      CALCULAR RUTA       //
+
                     }
                 } else {Toast.makeText(MapsActivity.this, "Dirección no encontrada", Toast.LENGTH_SHORT).show();}
             } catch (IOException e) {
