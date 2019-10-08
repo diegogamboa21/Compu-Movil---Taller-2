@@ -26,6 +26,9 @@
         android:paddingLeft="15dp"
         android:paddingTop="10dp"
         android:paddingRight="15dp"
-        android:paddingBottom="10dp" />
+        android:paddingBottom="10dp"
+        android:text="Salitre Mágico"
+        android:imeOptions="actionDone"
+        android:inputType="text"/>
 
 </FrameLayout>

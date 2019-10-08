@@ -6,6 +6,8 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static final double lowerLeftLongitude= -78.903968;
     public static final double upperRightLatitude= 11.983639;
     public static final double upperRigthLongitude= -71.869905;
+    Geocoder mGeocoder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(Location location) {
 
+                mGeocoder = new Geocoder(getBaseContext());
+
                 Calendar calendario = Calendar.getInstance();
                 int hora = calendario.get(Calendar.HOUR_OF_DAY);
                 //int minutos = calendario.get(Calendar.MINUTE);
@@ -106,9 +111,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             upperRightLatitude,
                             upperRigthLongitude);
                     */
-                    Geocoder mGeocoder = new Geocoder(getBaseContext());
+
                     editTextAddress = (EditText) findViewById(R.id.editTextAddress);
-                    findAddress(editTextAddress.getText().toString(), mGeocoder);
+
+                    editTextAddress.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                        @Override
+                        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                        if (actionId == EditorInfo.IME_ACTION_DONE){
+                            String addressString = editTextAddress.getText().toString();
+                            //Toast.makeText(getApplicationContext(), "Entre", Toast.LENGTH_LONG).show();
+                            findAddress(addressString, mGeocoder);
+                        }
+                        return false;
+                        }
+                    });
                 }
                 else {
                     Toast.makeText(MapsActivity.this, "Pedir que active el GPS", Toast.LENGTH_SHORT).show();
@@ -126,10 +142,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Address addressResult = addresses.get(0);
                     LatLng position = new LatLng(addressResult.getLatitude(), addressResult.getLongitude());
                     if (mMap != null) {
-                        mMap.addMarker(new MarkerOptions().position(position)
-                            .title("Punto")
-                            .snippet("Seleccionado")
-                        );
+                        MarkerOptions myMarkerOptions = new MarkerOptions();
+                        myMarkerOptions.position(position);
+                        myMarkerOptions.title("Dirección Encontrada");
+                        myMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+                        mMap.addMarker(myMarkerOptions);
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
                     }
                 } else {Toast.makeText(MapsActivity.this, "Dirección no encontrada", Toast.LENGTH_SHORT).show();}
             } catch (IOException e) {
