@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     //public static final String TAG = "MainActivity";
     private static final int REQUEST_CONTACTS = 0;
     private static final int REQUEST_LOCATION = 1;
+    private static final int REQUEST_LOCATION_COARSE = 1;
 
     private static String PERMISSIONS_CONTACT = Manifest.permission.READ_CONTACTS;
     private static String PERMISSIONS_CAMERA = Manifest.permission.CAMERA;
@@ -77,11 +78,13 @@ public class MainActivity extends AppCompatActivity {
         imageButtonMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                askPermissionMap();
+                askPermissionMapFine();
+                askPermissionMapCoarse();
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-                    startActivity(intent);
+                    if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                        startActivity(intent);
+                    }
                 }
             }
         });
@@ -116,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void askPermissionMap() {
+    private void askPermissionMapFine() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 Toast.makeText(this, "Se necesita el permiso para poder mostrar la localización!", Toast.LENGTH_LONG).show();
@@ -124,6 +127,15 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
         }
     }
+
+        private void askPermissionMapCoarse() {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    Toast.makeText(this, "Se necesita el permiso para poder mostrar la localización!", Toast.LENGTH_LONG).show();
+                }
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION_COARSE);
+            }
+        }
 
     //  -----------FUNCION GENERAL--------------    //
     public void requestPermission(String permiso, String justificacion, int code) {
